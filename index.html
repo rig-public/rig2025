@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vedic Dossier: The Moon (Chandra)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Tiro+Devanagari+Sanskrit&family=Hind+Siliguri:wght@400;500;700&family=Tiro+Bangla&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF5;
+            color: #3D3522;
+        }
+        html[lang="hi"] body { font-family: 'Hind Siliguri', sans-serif; }
+        html[lang="bn"] body { font-family: 'Tiro Bangla', serif; }
+        .sanskrit {
+            font-family: 'Tiro Devanagari Sanskrit', serif;
+        }
+        
+        /* --- CORRECTED STYLES (Replaced @apply with standard CSS) --- */
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+            font-weight: 500; /* font-medium */
+            color: rgba(146, 103, 22, 0.7); /* text-amber-800/70 */
+            transition: color 300ms, background-color 300ms;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        @media (min-width: 768px) {
+            .nav-btn {
+                font-size: 1rem; /* md:text-base */
+                line-height: 1.5rem;
+            }
+        }
+        .nav-btn.active {
+            background-color: rgba(252, 237, 198, 0.6); /* bg-amber-200/60 */
+            color: rgb(120, 82, 17); /* text-amber-900 */
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); /* shadow-sm */
+        }
+        .nav-btn:not(.active):hover {
+            background-color: rgba(254, 247, 224, 0.5); /* bg-amber-100/50 */
+            color: rgb(120, 82, 17); /* text-amber-900 */
+        }
+
+        .lang-btn {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            font-size: 0.75rem; /* text-xs */
+            font-weight: 600; /* font-semibold */
+            color: rgb(180, 83, 9); /* text-amber-700 */
+            background-color: rgb(254, 243, 199); /* bg-amber-100 */
+            border-radius: 9999px; /* rounded-full */
+            transition: color 200ms, background-color 200ms;
+        }
+        .lang-btn.active {
+            background-color: rgb(217, 119, 6); /* bg-amber-600 */
+            color: white;
+        }
+        .lang-btn:not(.active):hover {
+            background-color: rgb(253, 230, 138); /* bg-amber-200 */
+        }
+        
+        .house-grid-item {
+            border: 1px solid rgba(220, 165, 80, 0.5); /* border-amber-300/50 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1 / 1;
+            cursor: pointer;
+            transition: all 200ms;
+        }
+        .house-grid-item:hover {
+            background-color: rgba(252, 237, 198, 0.5); /* hover:bg-amber-200/50 */
+            transform: scale(1.05); /* hover:scale-105 */
+        }
+        .house-grid-item.active {
+            background-color: rgba(245, 198, 120, 0.8); /* bg-amber-300/80 */
+            color: rgb(120, 82, 17); /* text-amber-900 */
+            font-weight: 700; /* font-bold */
+            transform: scale(1.05); /* scale-105 */
+        }
+
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.375rem;
+            top: 0.5rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 9999px;
+            background-color: #c2a158;
+            border: 2px solid #FDFBF5;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: clamp(300px, 40vw, 400px); /* Refined for responsiveness */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="min-h-screen">
+        <header class="text-center py-8 px-4 bg-gradient-to-b from-amber-50 to-transparent">
+            <h1 class="text-4xl md:text-5xl font-bold text-amber-900 sanskrit">चन्द्रः</h1>
+            <h2 class="text-2xl md:text-3xl font-bold text-amber-800 mt-1" data-lang-key="main_title">Vedic Dossier on the Moon</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-amber-900/80" data-lang-key="main_subtitle">
+                An interactive exploration of Chandra, the Moon in Vedic astrology, covering its mythological origins, astrological significance, historical study, and the precise computational methods used to track its celestial journey.
+            </p>
+        </header>
+
+        <nav class="sticky top-0 z-10 bg-amber-50/80 backdrop-blur-md shadow-sm mb-8">
+            <div class="max-w-5xl mx-auto px-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center py-2">
+                    <div class="flex justify-center space-x-2 md:space-x-4 py-1">
+                        <button class="nav-btn active" data-target="mythology" data-lang-key="nav_mythology">Mythology & Symbolism</button>
+                        <button class="nav-btn" data-target="astrology" data-lang-key="nav_astrology">Astrological Profile</button>
+                        <button class="nav-btn" data-target="timeline" data-lang-key="nav_timeline">Historical Timeline</button>
+                        <button class="nav-btn" data-target="computation" data-lang-key="nav_computation">Computational Matrix</button>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                        <button class="lang-btn active" data-lang="en">EN</button>
+                        <button class="lang-btn" data-lang="hi">HI</button>
+                        <button class="lang-btn" data-lang="bn">BN</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+
+            <section id="mythology" class="content-section active">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-amber-900" data-lang-key="myth_title">Mythology & Symbolism</h3>
+                    <p class="mt-2 text-amber-800/90 max-w-2xl mx-auto" data-lang-key="myth_subtitle">This section delves into the foundational Hindu myths that shape the character of Chandra, revealing his divine origins and the allegorical tales that define his astrological symbolism of mind, emotions, and cyclical nature.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white/50 rounded-lg p-6 shadow-md border border-amber-200/50">
+                        <h4 class="font-bold text-xl text-amber-900" data-lang-key="myth_origin_title">Genealogy & Origin</h4>
+                        <p class="mt-2 text-sm text-amber-800/90" data-lang-key="myth_origin_text">Chandra emerged from the cosmic mind of the Puruṣa and is famously known as the son of the great sage <b class="font-semibold">Atri</b> and his devoted wife, <b class="font-semibold">Anasūyā</b>. This parentage links him directly to the primordial forces of creation and intellect, establishing his role as the presiding deity of the mind (<span class="italic">manas</span>).</p>
+                    </div>
+                    <div class="bg-white/50 rounded-lg p-6 shadow-md border border-amber-200/50">
+                        <h4 class="font-bold text-xl text-amber-900" data-lang-key="myth_nakshatra_title">The 27 Nakṣatras</h4>
+                        <p class="mt-2 text-sm text-amber-800/90" data-lang-key="myth_nakshatra_text">Chandra married the 27 daughters of the Prajāpati Dakṣa, who are the 27 Nakṣatras (lunar mansions). His favoritism towards Rohiṇī angered his other wives, leading Dakṣa to curse him with a wasting disease. This curse explains the waning of the Moon (Kṛṣṇa Pakṣa) and its subsequent waxing (Śukla Pakṣa) after the intervention of Śiva.</p>
+                    </div>
+                    <div class="bg-white/50 rounded-lg p-6 shadow-md border border-amber-200/50">
+                        <h4 class="font-bold text-xl text-amber-900" data-lang-key="myth_churning_title">Samudra-manthana</h4>
+                        <p class="mt-2 text-sm text-amber-800/90" data-lang-key="myth_churning_text">During the Samudra-manthana, the great churning of the cosmic ocean by the Devas and Asuras, Chandra was one of the divine treasures (<span class="italic">ratnas</span>) that emerged. Śiva took him and placed him upon his head as an ornament, granting him divine status and protection. This association highlights the Moon's pure, sattvic nature.</p>
+                    </div>
+                </div>
+                 <div class="mt-6 bg-white/50 rounded-lg p-6 shadow-md border border-amber-200/50">
+                    <h4 class="font-bold text-xl text-amber-900" data-lang-key="myth_symbolism_title">Core Symbolism</h4>
+                    <p class="mt-2 text-sm text-amber-800/90" data-lang-key="myth_symbolism_text">In Vedic astrology, Chandra is the ultimate symbol of the mind, emotions, mother, nourishment, and fertility. His cyclical phases represent the rhythms of life, death, and rebirth. As the fastest-moving graha, he governs our daily moods, mental state (<span class="italic">mānasthiti</span>), and immediate responses to the world, reflecting the ever-changing nature of consciousness.</p>
+                </div>
+            </section>
+
+            <section id="astrology" class="content-section">
+                 <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-amber-900" data-lang-key="astro_title">Astrological Profile</h3>
+                    <p class="mt-2 text-amber-800/90 max-w-2xl mx-auto" data-lang-key="astro_subtitle">Explore the Moon's fundamental astrological attributes, from its dignities in the zodiac to its strength and its profound influence when placed in the twelve houses of a horoscope. Interact with the elements below to uncover its interpretive significance.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-xl text-amber-900 mb-4" data-lang-key="astro_dignities_title">Dignities & Rulership</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                            <div class="text-center p-4 bg-white/50 rounded-lg shadow-md border border-amber-200/50">
+                                <p class="text-5xl">♋︎</p>
+                                <p class="font-semibold mt-1" data-lang-key="astro_rulership">Rulership</p>
+                                <p class="text-sm text-amber-800/90" data-lang-key="astro_cancer">Cancer</p>
+                            </div>
+                            <div class="text-center p-4 bg-white/50 rounded-lg shadow-md border border-amber-200/50">
+                                <p class="text-5xl">♉︎</p>
+                                <p class="font-semibold mt-1" data-lang-key="astro_exaltation">Exaltation</p>
+                                <p class="text-sm text-amber-800/90" data-lang-key="astro_taurus">Taurus</p>
+                            </div>
+                            <div class="text-center p-4 bg-white/50 rounded-lg shadow-md border border-amber-200/50">
+                                <p class="text-5xl">♏︎</p>
+                                <p class="font-semibold mt-1" data-lang-key="astro_debilitation">Debilitation</p>
+                                <p class="text-sm text-amber-800/90" data-lang-key="astro_scorpio">Scorpio</p>
+                            </div>
+                        </div>
+
+                        <h4 class="font-bold text-xl text-amber-900 mb-4" data-lang-key="astro_sadbala_title">Śadbala: Astrological Strength</h4>
+                        <p class="text-sm text-amber-800/90 mb-4" data-lang-key="astro_sadbala_text">Śadbala is a system for quantifying a planet's strength. The radar chart shows Chandra's capacity across six key sources of power. A balanced chart indicates a psychologically strong and resilient Moon.</p>
+                        <div class="bg-white/50 p-4 rounded-lg shadow-md border border-amber-200/50">
+                            <div class="chart-container">
+                                <canvas id="sadbalaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xl text-amber-900 mb-4" data-lang-key="astro_houses_title">Effects in the 12 Houses (Bhāvas)</h4>
+                        <p class="text-sm text-amber-800/90 mb-4" data-lang-key="astro_houses_text">The Moon's placement in a house (<span class="italic">bhāva</span>) reveals the area of life where one's emotional focus lies. Click on a house number below to read its specific interpretation.</p>
+                        <div class="grid grid-cols-4 gap-1 mb-4">
+                            <div class="house-grid-item active" data-house="1">1</div>
+                            <div class="house-grid-item" data-house="2">2</div>
+                            <div class="house-grid-item" data-house="3">3</div>
+                            <div class="house-grid-item" data-house="4">4</div>
+                            <div class="house-grid-item" data-house="5">5</div>
+                            <div class="house-grid-item" data-house="6">6</div>
+                            <div class="house-grid-item" data-house="7">7</div>
+                            <div class="house-grid-item" data-house="8">8</div>
+                            <div class="house-grid-item" data-house="9">9</div>
+                            <div class="house-grid-item" data-house="10">10</div>
+                            <div class="house-grid-item" data-house="11">11</div>
+                            <div class="house-grid-item" data-house="12">12</div>
+                        </div>
+                        <div id="house-interpretation" class="bg-white/50 p-6 rounded-lg shadow-inner border border-amber-200/50 min-h-[150px]">
+                            </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="timeline" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold text-amber-900" data-lang-key="timeline_title">Historical Timeline of Lunar Study</h3>
+                    <p class="mt-2 text-amber-800/90 max-w-2xl mx-auto" data-lang-key="timeline_subtitle">Trace the intellectual lineage of lunar observation and interpretation in India, from the earliest Vedic hymns to the sophisticated mathematical treatises of the classical and medieval eras.</p>
+                </div>
+                <div class="relative border-l-2 border-amber-300/70 ml-10 pl-10 space-y-12">
+                    <div class="relative timeline-item">
+                        <p class="absolute -left-10 text-right text-sm text-amber-800/80 -translate-x-full">c. 1500 BCE</p>
+                        <h4 class="font-bold text-lg text-amber-900" data-lang-key="timeline_rgveda_title">Ṛg-Veda</h4>
+                        <p class="text-sm text-amber-800/90 mt-1" data-lang-key="timeline_rgveda_text">The earliest hymns invoke the Moon primarily as Soma, a divine, intoxicating drink and a deity. Its role is largely ritualistic and calendrical, marking time for sacrifices.</p>
+                    </div>
+                    <div class="relative timeline-item">
+                        <p class="absolute -left-10 text-right text-sm text-amber-800/80 -translate-x-full">c. 1200 BCE</p>
+                        <h4 class="font-bold text-lg text-amber-900" data-lang-key="timeline_vedanga_title">Vedāṅga Jyotiṣa</h4>
+                        <p class="text-sm text-amber-800/90 mt-1" data-lang-key="timeline_vedanga_text">This ancillary Vedic text, attributed to Lagadha, is one of the earliest works on Indian astronomy. It establishes a formal system for calculating tithis (lunar days) and nakṣatras for ritual purposes.</p>
+                    </div>
+                    <div class="relative timeline-item">
+                        <p class="absolute -left-10 text-right text-sm text-amber-800/80 -translate-x-full">c. 400 CE</p>
+                        <h4 class="font-bold text-lg text-amber-900" data-lang-key="timeline_surya_title">Sūrya Siddhānta</h4>
+                        <p class="text-sm text-amber-800/90 mt-1" data-lang-key="timeline_surya_text">A foundational text of classical Indian astronomy. Its chapters on the Moon provide sophisticated formulas for calculating lunar longitude, including corrections for anomaly and evection, marking a major leap in mathematical precision.</p>
+                    </div>
+                    <div class="relative timeline-item">
+                        <p class="absolute -left-10 text-right text-sm text-amber-800/80 -translate-x-full">c. 550 CE</p>
+                        <h4 class="font-bold text-lg text-amber-900" data-lang-key="timeline_brihat_title">Bṛhat Saṃhitā</h4>
+                        <p class="text-sm text-amber-800/90 mt-1" data-lang-key="timeline_brihat_text">Authored by the great polymath Varāhamihira, this encyclopedic work contains detailed sections on lunar phenomena, including conjunctions, eclipses, and astrological interpretations of the Moon's position in various nakṣatras and its aspects.</p>
+                    </div>
+                     <div class="relative timeline-item">
+                        <p class="absolute -left-10 text-right text-sm text-amber-800/80 -translate-x-full">c. 1150 CE</p>
+                        <h4 class="font-bold text-lg text-amber-900" data-lang-key="timeline_siromani_title">Siddhānta Śiromaṇi</h4>
+                        <p class="text-sm text-amber-800/90 mt-1" data-lang-key="timeline_siromani_text">Bhāskara II's masterpiece further refines lunar calculations. He introduces concepts like the equation of center with greater accuracy and provides detailed commentary on lunar motion, solidifying the mathematical framework for centuries to come.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="computation" class="content-section">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-amber-900" data-lang-key="comp_title">Computational Matrix</h3>
+                    <p class="mt-2 text-amber-800/90 max-w-2xl mx-auto" data-lang-key="comp_subtitle">This section presents the core mathematical formulas for determining the Moon's true longitude (spaṣṭa candra) as per classical siddhāntic astronomy. Use the calculator to see a step-by-step example for a given date.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-xl text-amber-900 mb-4" data-lang-key="comp_params_title">Calculation Parameters</h4>
+                        <div class="overflow-x-auto bg-white/50 p-4 rounded-lg shadow-md border border-amber-200/50">
+                            <table class="w-full text-sm text-left">
+                                <thead class="border-b-2 border-amber-300/70">
+                                    <tr>
+                                        <th class="py-2 pr-4 font-semibold" data-lang-key="comp_table_var">Variable</th>
+                                        <th class="py-2 pr-4 font-semibold" data-lang-key="comp_table_desc">Description</th>
+                                        <th class="py-2 pr-4 font-semibold" data-lang-key="comp_table_val">Formula / Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-amber-200/50">
+                                        <td class="py-2 pr-4 sanskrit">D</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_days">Days from epoch</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_user_input">User Input</td>
+                                    </tr>
+                                    <tr class="border-b border-amber-200/50">
+                                        <td class="py-2 pr-4">$$L_m$$</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_mean_long">Mean Longitude</td>
+                                        <td class="py-2 pr-4">$$(13.1764 \times D) \pmod{360}$$</td>
+                                    </tr>
+                                    <tr class="border-b border-amber-200/50">
+                                        <td class="py-2 pr-4">$$M_m$$</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_mean_anom">Mean Anomaly</td>
+                                        <td class="py-2 pr-4">$$(0.1114 \times D) \pmod{360}$$</td>
+                                    </tr>
+                                    <tr class="border-b border-amber-200/50">
+                                        <td class="py-2 pr-4">$$C$$</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_eq_center">Equation of Center</td>
+                                        <td class="py-2 pr-4">$$6.2886 \times \sin(M_m)$$</td>
+                                    </tr>
+                                    <tr class="border-b border-amber-200/50">
+                                        <td class="py-2 pr-4">$$L'$$</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_corr_long">Corrected Longitude</td>
+                                        <td class="py-2 pr-4">$$L_m + C$$</td>
+                                    </tr>
+                                     <tr>
+                                        <td class="py-2 pr-4">$$\lambda$$</td>
+                                        <td class="py-2 pr-4" data-lang-key="comp_true_long">True Longitude</td>
+                                        <td class="py-2 pr-4">$$(L' - \text{Ayanāṃśa}) \pmod{360}$$</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                         <h4 class="font-bold text-xl text-amber-900 mb-4" data-lang-key="comp_calc_title">Interactive Calculator</h4>
+                         <div class="bg-white/50 p-6 rounded-lg shadow-md border border-amber-200/50">
+                             <div class="space-y-4">
+                                <div>
+                                    <label for="date-input" class="block text-sm font-medium text-amber-800" data-lang-key="comp_select_date">Select a Date:</label>
+                                    <input type="date" id="date-input" class="mt-1 block w-full rounded-md border-amber-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm p-2">
+                                </div>
+                                <button id="calculate-btn" class="w-full bg-amber-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors duration-200" data-lang-key="comp_calc_btn">Calculate Lunar Longitude</button>
+                             </div>
+                             <div id="calculation-results" class="mt-6 text-sm space-y-2">
+                                 <p class="text-amber-800/80" data-lang-key="comp_results_placeholder">Results will be displayed here...</p>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- DOM Element Selection ---
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+            const houseGridItems = document.querySelectorAll('.house-grid-item');
+            const houseInterpretationEl = document.getElementById('house-interpretation');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const dateInput = document.getElementById('date-input');
+            const resultsEl = document.getElementById('calculation-results');
+            const langButtons = document.querySelectorAll('.lang-btn');
+
+            // --- State Management ---
+            let currentLang = localStorage.getItem('lang') || 'en';
+            let sadbalaChart; // To hold the chart instance
+
+            // --- Translations Data ---
+            const translations = {
+                en: {
+                    main_title: "Vedic Dossier on the Moon",
+                    main_subtitle: "An interactive exploration of Chandra, the Moon in Vedic astrology, covering its mythological origins, astrological significance, historical study, and the precise computational methods used to track its celestial journey.",
+                    nav_mythology: "Mythology & Symbolism",
+                    nav_astrology: "Astrological Profile",
+                    nav_timeline: "Historical Timeline",
+                    nav_computation: "Computational Matrix",
+                    myth_title: "Mythology & Symbolism",
+                    myth_subtitle: "This section delves into the foundational Hindu myths that shape the character of Chandra, revealing his divine origins and the allegorical tales that define his astrological symbolism of mind, emotions, and cyclical nature.",
+                    myth_origin_title: "Genealogy & Origin",
+                    myth_origin_text: "Chandra emerged from the cosmic mind of the Puruṣa and is famously known as the son of the great sage <b>Atri</b> and his devoted wife, <b>Anasūyā</b>. This parentage links him directly to the primordial forces of creation and intellect, establishing his role as the presiding deity of the mind (<i>manas</i>).",
+                    myth_nakshatra_title: "The 27 Nakṣatras",
+                    myth_nakshatra_text: "Chandra married the 27 daughters of the Prajāpati Dakṣa, who are the 27 Nakṣatras (lunar mansions). His favoritism towards Rohiṇī angered his other wives, leading Dakṣa to curse him with a wasting disease. This curse explains the waning of the Moon (Kṛṣṇa Pakṣa) and its subsequent waxing (Śukla Pakṣa) after the intervention of Śiva.",
+                    myth_churning_title: "Samudra-manthana",
+                    myth_churning_text: "During the Samudra-manthana, the great churning of the cosmic ocean by the Devas and Asuras, Chandra was one of the divine treasures (<i>ratnas</i>) that emerged. Śiva took him and placed him upon his head as an ornament, granting him divine status and protection. This association highlights the Moon's pure, sattvic nature.",
+                    myth_symbolism_title: "Core Symbolism",
+                    myth_symbolism_text: "In Vedic astrology, Chandra is the ultimate symbol of the mind, emotions, mother, nourishment, and fertility. His cyclical phases represent the rhythms of life, death, and rebirth. As the fastest-moving graha, he governs our daily moods, mental state (<i>mānasthiti</i>), and immediate responses to the world, reflecting the ever-changing nature of consciousness.",
+                    astro_title: "Astrological Profile",
+                    astro_subtitle: "Explore the Moon's fundamental astrological attributes, from its dignities in the zodiac to its strength and its profound influence when placed in the twelve houses of a horoscope. Interact with the elements below to uncover its interpretive significance.",
+                    astro_dignities_title: "Dignities & Rulership",
+                    astro_rulership: "Rulership",
+                    astro_cancer: "Cancer",
+                    astro_exaltation: "Exaltation",
+                    astro_taurus: "Taurus",
+                    astro_debilitation: "Debilitation",
+                    astro_scorpio: "Scorpio",
+                    astro_sadbala_title: "Śadbala: Astrological Strength",
+                    astro_sadbala_text: "Śadbala is a system for quantifying a planet's strength. The radar chart shows Chandra's capacity across six key sources of power. A balanced chart indicates a psychologically strong and resilient Moon.",
+                    astro_houses_title: "Effects in the 12 Houses (Bhāvas)",
+                    astro_houses_text: "The Moon's placement in a house (<i>bhāva</i>) reveals the area of life where one's emotional focus lies. Click on a house number below to read its specific interpretation.",
+                    timeline_title: "Historical Timeline of Lunar Study",
+                    timeline_subtitle: "Trace the intellectual lineage of lunar observation and interpretation in India, from the earliest Vedic hymns to the sophisticated mathematical treatises of the classical and medieval eras.",
+                    timeline_rgveda_title: "Ṛg-Veda",
+                    timeline_rgveda_text: "The earliest hymns invoke the Moon primarily as Soma, a divine, intoxicating drink and a deity. Its role is largely ritualistic and calendrical, marking time for sacrifices.",
+                    timeline_vedanga_title: "Vedāṅga Jyotiṣa",
+                    timeline_vedanga_text: "This ancillary Vedic text, attributed to Lagadha, is one of the earliest works on Indian astronomy. It establishes a formal system for calculating tithis (lunar days) and nakṣatras for ritual purposes.",
+                    timeline_surya_title: "Sūrya Siddhānta",
+                    timeline_surya_text: "A foundational text of classical Indian astronomy. Its chapters on the Moon provide sophisticated formulas for calculating lunar longitude, including corrections for anomaly and evection, marking a major leap in mathematical precision.",
+                    timeline_brihat_title: "Bṛhat Saṃhitā",
+                    timeline_brihat_text: "Authored by the great polymath Varāhamihira, this encyclopedic work contains detailed sections on lunar phenomena, including conjunctions, eclipses, and astrological interpretations of the Moon's position in various nakṣatras and its aspects.",
+                    timeline_siromani_title: "Siddhānta Śiromaṇi",
+                    timeline_siromani_text: "Bhāskara II's masterpiece further refines lunar calculations. He introduces concepts like the equation of center with greater accuracy and provides detailed commentary on lunar motion, solidifying the mathematical framework for centuries to come.",
+                    comp_title: "Computational Matrix",
+                    comp_subtitle: "This section presents the core mathematical formulas for determining the Moon's true longitude (spaṣṭa candra) as per classical siddhāntic astronomy. Use the calculator to see a step-by-step example for a given date.",
+                    comp_params_title: "Calculation Parameters",
+                    comp_table_var: "Variable",
+                    comp_table_desc: "Description",
+                    comp_table_val: "Formula / Value",
+                    comp_days: "Days from epoch",
+                    comp_user_input: "User Input",
+                    comp_mean_long: "Mean Longitude",
+                    comp_mean_anom: "Mean Anomaly",
+                    comp_eq_center: "Equation of Center",
+                    comp_corr_long: "Corrected Longitude",
+                    comp_true_long: "True Longitude",
+                    comp_ayanamsa: "Ayanāṃśa Correction",
+                    comp_calc_title: "Interactive Calculator",
+                    comp_select_date: "Select a Date:",
+                    comp_calc_btn: "Calculate Lunar Longitude",
+                    comp_results_placeholder: "Results will be displayed here...",
+                    sadbala_label: "Chandra Śadbala (in Rupas)",
+                    sadbala_cats: ['Positional', 'Directional', 'Temporal', 'Motional', 'Natural', 'Aspectual'],
+                    house_interpretations: {
+                        1: "<b>House 1 (Self):</b> The mind and identity are one. Emotionally expressive, sensitive, and relationship-oriented. Personality is nurturing and fluctuating. Public perception is important.",
+                        2: "<b>House 2 (Wealth, Family):</b> Strong emotional attachment to family, possessions, and security. Finances can fluctuate. A soothing voice. Finds comfort in material stability and familiar surroundings.",
+                        3: "<b>House 3 (Communication, Siblings):</b> Mind is curious and communicative. Emotionally connected to siblings and neighbors. Short journeys and learning bring comfort. Thinking is often subjective.",
+                        4: "<b>House 4 (Home, Mother):</b> The quintessential placement for the Moon. Deeply connected to mother, home, and roots. Seeks emotional security above all. A strong need for a private sanctuary.",
+                        5: "<b>House 5 (Creativity, Children):</b> Emotionally invested in creative expression, romance, and children. The mind is playful and dramatic. Finds joy in speculation and intellectual pursuits.",
+                        6: "<b>House 6 (Health, Service):</b> Finds emotional satisfaction through service and daily routines. A worrier's mind, focused on details and self-improvement. Prone to health issues related to anxiety.",
+                        7: "<b>House 7 (Partnership):</b> Seeks emotional fulfillment through relationships and marriage. The partner is seen as a source of security. A strong need for harmony and diplomacy in one-on-one interactions.",
+                        8: "<b>House 8 (Transformation, Occult):</b> A deep, intense, and secretive emotional nature. The mind is drawn to psychology, mysteries, and joint resources. Prone to emotional turmoil and profound psychological insights.",
+                        9: "<b>House 9 (Philosophy, Father):</b> Emotionally connected to beliefs, higher education, and long-distance travel. Finds security in philosophy or religion. The mother may be a spiritual guide.",
+                        10: "<b>House 10 (Career, Status):</b> Public life and career are central to emotional well-being. A strong need for recognition and respect. The career often involves nurturing, caring for, or dealing with the public.",
+                        11: "<b>House 11 (Friendships, Gains):</b> Finds emotional support from friends, groups, and social networks. Hopes and wishes are important. Fulfillment comes from achieving collective goals and humanitarian ideals.",
+                        12: "<b>House 12 (Spirituality, Loss):</b> A sensitive, intuitive, and compassionate mind. Finds peace in solitude, spirituality, and selfless service. Prone to vivid dreams and subconscious fears. Emotionally elusive."
+                    },
+                    house_title_prefix: "Moon in House "
+                },
+                hi: {
+                    main_title: "चंद्र पर वैदिक डॉसियर",
+                    main_subtitle: "चंद्रमा का एक इंटरैक्टिव अन्वेषण, वैदिक ज्योतिष में चंद्रमा, इसके पौराणिक मूल, ज्योतिषीय महत्व, ऐतिहासिक अध्ययन, और इसकी दिव्य यात्रा को ट्रैक करने के लिए उपयोग की जाने वाली सटीक कम्प्यूटेशनल विधियों को शामिल करता है।",
+                    nav_mythology: "पौराणिक कथा और प्रतीकवाद",
+                    nav_astrology: "ज्योतिषीय प्रोफ़ाइल",
+                    nav_timeline: "ऐतिहासिक समयरेखा",
+                    nav_computation: "कम्प्यूटेशनल मैट्रिक्स",
+                    myth_title: "पौराणिक कथा और प्रतीकवाद",
+                    myth_subtitle: "यह खंड उन foundational हिंदू मिथकों में delves है जो चंद्र के चरित्र को आकार देते हैं, उनके दिव्य मूल और उन रूपक कथाओं को प्रकट करते हैं जो मन, भावनाओं और चक्रीय प्रकृति के उनके ज्योतिषीय प्रतीकवाद को परिभाषित करते हैं।",
+                    myth_origin_title: "वंशावली और उत्पत्ति",
+                    myth_origin_text: "चंद्रमा पुरुष के ब्रह्मांडीय मन से उभरा और प्रसिद्ध रूप से महान ऋषि <b>अत्रि</b> और उनकी समर्पित पत्नी <b>अनसूया</b> के पुत्र के रूप में जाना जाता है। यह पितृत्व उन्हें सीधे सृष्टि और बुद्धि की मौलिक शक्तियों से जोड़ता है, मन (<i>मानस</i>) के अधिष्ठाता देवता के रूप में उनकी भूमिका स्थापित करता है।",
+                    myth_nakshatra_title: "27 नक्षत्र",
+                    myth_nakshatra_text: "चंद्रमा ने प्रजापति दक्ष की 27 पुत्रियों से विवाह किया, जो 27 नक्षत्र (चंद्र हवेली) हैं। रोहिणी के प्रति उनके पक्षपात ने उनकी अन्य पत्नियों को नाराज कर दिया, जिससे दक्ष ने उन्हें एक क्षय रोग का श्राप दिया। यह श्राप चंद्रमा के क्षय (कृष्ण पक्ष) और शिव के हस्तक्षेप के बाद उसके बाद के वैक्सिंग (शुक्ल पक्ष) की व्याख्या करता है।",
+                    myth_churning_title: "समुद्र-मंथन",
+                    myth_churning_text: "समुद्र-मंथन के दौरान, देवों और असुरों द्वारा ब्रह्मांडीय महासागर के महान मंथन, चंद्रमा दिव्य खजानों (<i>रत्नों</i>) में से एक था जो उभरा। शिव ने उसे ले लिया और उसे एक आभूषण के रूप में अपने सिर पर रख दिया, जिससे उसे दिव्य दर्जा और सुरक्षा मिली। यह जुड़ाव चंद्रमा की शुद्ध, सात्विक प्रकृति पर प्रकाश डालता है।",
+                    myth_symbolism_title: "मूल प्रतीकवाद",
+                    myth_symbolism_text: "वैदिक ज्योतिष में, चंद्रमा मन, भावनाओं, मां, पोषण और प्रजनन क्षमता का अंतिम प्रतीक है। इसके चक्रीय चरण जीवन, मृत्यु और पुनर्जन्म की लय का प्रतिनिधित्व करते हैं। सबसे तेज गति से चलने वाले ग्रह के रूप में, यह हमारे दैनिक मूड, मानसिक स्थिति (<i>मानस्थिति</i>) और दुनिया के प्रति तत्काल प्रतिक्रियाओं को नियंत्रित करता है, जो चेतना की हमेशा बदलती प्रकृति को दर्शाता है।",
+                    astro_title: "ज्योतिषीय प्रोफ़ाइल",
+                    astro_subtitle: "चंद्रमा की मौलिक ज्योतिषीय विशेषताओं का अन्वेषण करें, राशि चक्र में इसकी गरिमा से लेकर इसकी ताकत और कुंडली के बारह भावों में रखे जाने पर इसके गहरे प्रभाव तक। इसकी व्याख्यात्मक महत्ता को उजागर करने के लिए नीचे दिए गए तत्वों के साथ बातचीत करें।",
+                    astro_dignities_title: "गरिमा और शासन",
+                    astro_rulership: "शासन",
+                    astro_cancer: "कर्क",
+                    astro_exaltation: "उच्चाटन",
+                    astro_taurus: "वृषभ",
+                    astro_debilitation: "दुर्बलीकरण",
+                    astro_scorpio: "वृश्चिक",
+                    astro_sadbala_title: "षड्बल: ज्योतिषीय शक्ति",
+                    astro_sadbala_text: "षड्बल एक ग्रह की शक्ति को मापने की एक प्रणाली है। रडार चार्ट शक्ति के छह प्रमुख स्रोतों में चंद्र की क्षमता को दर्शाता है। एक संतुलित चार्ट एक मनोवैज्ञानिक रूप से मजबूत और लचीला चंद्रमा को इंगित करता है।",
+                    astro_houses_title: "12 भावों में प्रभाव",
+                    astro_houses_text: "एक भाव में चंद्रमा का स्थान जीवन के उस क्षेत्र को प्रकट करता है जहां किसी का भावनात्मक ध्यान निहित है। इसकी विशिष्ट व्याख्या पढ़ने के लिए नीचे दिए गए भाव संख्या पर क्लिक करें।",
+                    timeline_title: "चंद्र अध्ययन की ऐतिहासिक समयरेखा",
+                    timeline_subtitle: "भारत में चंद्र अवलोकन और व्याख्या की बौद्धिक वंशावली का पता लगाएं, शुरुआती वैदिक भजनों से लेकर शास्त्रीय और मध्ययुगीन युग के परिष्कृत गणितीय ग्रंथों तक।",
+                    timeline_rgveda_title: "ऋग्वेद",
+                    timeline_rgveda_text: "सबसे पुराने भजन चंद्रमा को मुख्य रूप से सोम, एक दिव्य, नशीला पेय और एक देवता के रूप में आह्वान करते हैं। इसकी भूमिका काफी हद तक कर्मकांड और कैलेंडर संबंधी है, जो बलिदानों के लिए समय को चिह्नित करती है।",
+                    timeline_vedanga_title: "वेदांग ज्योतिष",
+                    timeline_vedanga_text: "यह सहायक वैदिक पाठ, जिसका श्रेय लगध को दिया जाता है, भारतीय खगोल विज्ञान पर सबसे शुरुआती कार्यों में से एक है। यह कर्मकांड के उद्देश्यों के लिए तिथियों (चंद्र दिनों) और नक्षत्रों की गणना के लिए एक औपचारिक प्रणाली स्थापित करता है।",
+                    timeline_surya_title: "सूर्य सिद्धांत",
+                    timeline_surya_text: "शास्त्रीय भारतीय खगोल विज्ञान का एक मूलभूत पाठ। चंद्रमा पर इसके अध्याय चंद्र देशांतर की गणना के लिए परिष्कृत सूत्र प्रदान करते हैं, जिसमें विसंगति और पूर्व संध्या के लिए सुधार शामिल हैं, जो गणितीय परिशुद्धता में एक बड़ी छलांग को चिह्नित करता है।",
+                    timeline_brihat_title: "बृहत्संहिता",
+                    timeline_brihat_text: "महान पॉलीमैथ वराहमिहिर द्वारा लिखित, इस विश्वकोशीय कार्य में चंद्र घटनाओं पर विस्तृत खंड हैं, जिनमें संयोजन, ग्रहण और विभिन्न नक्षत्रों में चंद्रमा की स्थिति और इसके पहलुओं की ज्योतिषीय व्याख्याएं शामिल हैं।",
+                    timeline_siromani_title: "सिद्धांत शिरोमणि",
+                    timeline_siromani_text: "भास्कर द्वितीय की उत्कृष्ट कृति चंद्र गणनाओं को और परिष्कृत करती है। वह केंद्र के समीकरण जैसी अवधारणाओं को अधिक सटीकता के साथ प्रस्तुत करता है और चंद्र गति पर विस्तृत टिप्पणी प्रदान करता है, सदियों तक आने वाले गणितीय ढांचे को मजबूत करता है।",
+                    comp_title: "कम्प्यूटेशनल मैट्रिक्स",
+                    comp_subtitle: "यह खंड शास्त्रीय सिद्धांत खगोल विज्ञान के अनुसार चंद्रमा के वास्तविक देशांतर (स्पष्ट चंद्र) को निर्धारित करने के लिए मुख्य गणितीय सूत्र प्रस्तुत करता है। किसी दिए गए दिनांक के लिए चरण-दर-चरण उदाहरण देखने के लिए कैलकुलेटर का उपयोग करें।",
+                    comp_params_title: "गणना पैरामीटर",
+                    comp_table_var: "चर",
+                    comp_table_desc: "विवरण",
+                    comp_table_val: "सूत्र / मान",
+                    comp_days: "युग से दिन",
+                    comp_user_input: "उपयोगकर्ता इनपुट",
+                    comp_mean_long: "माध्य देशांतर",
+                    comp_mean_anom: "माध्य विसंगति",
+                    comp_eq_center: "केंद्र का समीकरण",
+                    comp_corr_long: "सही देशांतर",
+                    comp_true_long: "वास्तविक देशांतर",
+                    comp_ayanamsa: "अयनांश सुधार",
+                    comp_calc_title: "इंटरैक्टिव कैलकुलेटर",
+                    comp_select_date: "एक तिथि चुनें:",
+                    comp_calc_btn: "चंद्र देशांतर की गणना करें",
+                    comp_results_placeholder: "परिणाम यहां प्रदर्शित किए जाएंगे...",
+                    sadbala_label: "चंद्र षड्बल (रूपों में)",
+                    sadbala_cats: ['स्थान बल', 'दिग्बल', 'काल बल', 'चेष्टा बल', 'नैसर्गिक बल', 'दृग बल'],
+                    house_interpretations: {
+                        1: "<b>भाव 1 (स्वयं):</b> मन और पहचान एक हैं। भावनात्मक रूप से अभिव्यंजक, संवेदनशील और संबंध-उन्मुख। व्यक्तित्व पोषण करने वाला और उतार-चढ़ाव वाला होता है। सार्वजनिक धारणा महत्वपूर्ण है।",
+                        2: "<b>भाव 2 (धन, परिवार):</b> परिवार, संपत्ति और सुरक्षा से मजबूत भावनात्मक लगाव। वित्त में उतार-चढ़ाव हो सकता है। एक सुखदायक आवाज। भौतिक स्थिरता और परिचित परिवेश में आराम मिलता है।",
+                        3: "<b>भाव 3 (संचार, भाई-बहन):</b> मन जिज्ञासु और मिलनसार होता है। भाई-बहनों और पड़ोसियों से भावनात्मक रूप से जुड़ा हुआ। छोटी यात्राएं और सीखना आराम देता है। सोच अक्सर व्यक्तिपरक होती है।",
+                        4: "<b>भाव 4 (घर, माता):</b> चंद्रमा के लिए सर्वोत्कृष्ट स्थान। मां, घर और जड़ों से गहरा जुड़ाव। भावनात्मक सुरक्षा की सबसे ज्यादा तलाश। एक निजी अभयारण्य की तीव्र आवश्यकता।",
+                        5: "<b>भाव 5 (रचनात्मकता, बच्चे):</b> रचनात्मक अभिव्यक्ति, रोमांस और बच्चों में भावनात्मक रूप से निवेशित। मन चंचल और नाटकीय होता है। अटकलों और बौद्धिक गतिविधियों में आनंद मिलता है।",
+                        6: "<b>भाव 6 (स्वास्थ्य, सेवा):</b> सेवा और दैनिक दिनचर्या के माध्यम से भावनात्मक संतुष्टि मिलती है। एक चिंता करने वाला मन, विवरण और आत्म-सुधार पर केंद्रित। चिंता से संबंधित स्वास्थ्य समस्याओं से ग्रस्त।",
+                        7: "<b>भाव 7 (साझेदारी):</b> रिश्तों और शादी के माध्यम से भावनात्मक पूर्ति चाहता है। साथी को सुरक्षा के स्रोत के रूप में देखा जाता है। आमने-सामने की बातचीत में सद्भाव और कूटनीति की तीव्र आवश्यकता।",
+                        8: "<b>भाव 8 (परिवर्तन, गुप्त):</b> एक गहरी, तीव्र और गुप्त भावनात्मक प्रकृति। मन मनोविज्ञान, रहस्यों और संयुक्त संसाधनों की ओर आकर्षित होता है। भावनात्मक उथल-पुथल और गहन मनोवैज्ञानिक अंतर्दृष्टि से ग्रस्त।",
+                        9: "<b>भाव 9 (दर्शन, पिता):</b> विश्वासों, उच्च शिक्षा और लंबी दूरी की यात्रा से भावनात्मक रूप से जुड़ा हुआ। दर्शन या धर्म में सुरक्षा मिलती है। मां एक आध्यात्मिक मार्गदर्शक हो सकती है।",
+                        10: "<b>भाव 10 (कैरियर, स्थिति):</b> सार्वजनिक जीवन और कैरियर भावनात्मक भलाई के केंद्र में हैं। मान्यता और सम्मान की तीव्र आवश्यकता। कैरियर में अक्सर पोषण करना, देखभाल करना या जनता के साथ व्यवहार करना शामिल होता है।",
+                        11: "<b>भाव 11 (दोस्ती, लाभ):</b> दोस्तों, समूहों और सामाजिक नेटवर्क से भावनात्मक समर्थन मिलता है। आशाएं और इच्छाएं महत्वपूर्ण हैं। पूर्ति सामूहिक लक्ष्यों और मानवीय आदर्शों को प्राप्त करने से आती है।",
+                        12: "<b>भाव 12 (आध्यात्मिकता, हानि):</b> एक संवेदनशील, सहज और दयालु मन। एकांत, आध्यात्मिकता और निस्वार्थ सेवा में शांति मिलती है। ज्वलंत सपनों और अवचेतन भय से ग्रस्त। भावनात्मक रूप से मायावी।"
+                    },
+                    house_title_prefix: "भाव में चंद्रमा "
+                },
+                bn: {
+                    main_title: "চন্দ্র সম্পর্কিত বৈদিক Dossier",
+                    main_subtitle: "চন্দ্র, বৈদিক জ্যোতিষে চাঁদ, এর পৌরাণিক উত্স, জ্যোতিষীয় তাৎপর্য, ঐতিহাসিক অধ্যয়ন এবং এর স্বর্গীয় যাত্রা ট্র্যাক করতে ব্যবহৃত সুনির্দিষ্ট গণনামূলক পদ্ধতিগুলি নিয়ে একটি ইন্টারেক্টিভ অন্বেষণ।",
+                    nav_mythology: "পৌরাণিক কাহিনী ও প্রতীকবাদ",
+                    nav_astrology: "জ্যোতিষ প্রোফাইল",
+                    nav_timeline: "ঐতিহাসিক সময়রেখা",
+                    nav_computation: "গণনামূলক ম্যাট্রিক্স",
+                    myth_title: " পৌরাণিক কাহিনী ও প্রতীকবাদ",
+                    myth_subtitle: "এই বিভাগটি সেই foundational হিন্দু পুরাণগুলির মধ্যে delves যা চন্দ্রের চরিত্রকে রূপ দেয়, তার ঐশ্বরিক উত্স এবং সেই রূপক কাহিনীগুলিকে প্রকাশ করে যা মন, আবেগ এবং চক্রীয় প্রকৃতির তার জ্যোতিষীয় প্রতীকবাদকে সংজ্ঞায়িত করে।",
+                    myth_origin_title: "বংশতালিকা এবং উত্স",
+                    myth_origin_text: "চন্দ্র পুরুষের মহাজাগতিক মন থেকে আবির্ভূত হয়েছিল এবং মহান ঋষি <b>অত্রি</b> এবং তাঁর ভক্ত স্ত্রী <b>অনসূয়া</b>র পুত্র হিসাবে বিখ্যাতভাবে পরিচিত। এই পিতৃত্ব তাকে সরাসরি সৃষ্টি এবং বুদ্ধির আদিম শক্তির সাথে সংযুক্ত করে, মনের (<i>মনস</i>) সভাপতিত্বকারী দেবতা হিসাবে তার ভূমিকা প্রতিষ্ঠা করে।",
+                    myth_nakshatra_title: "২৭টি নক্ষত্র",
+                    myth_nakshatra_text: "চন্দ্র প্রজাপতি দক্ষের ২৭টি কন্যাকে বিয়ে করেছিলেন, যারা ২৭টি নক্ষত্র (চন্দ্র ভবন)। রোহিণী প্রতি তার পক্ষপাতিত্ব তার অন্য স্ত্রীদের রাগান্বিত করেছিল, যার ফলে দক্ষ তাকে একটি ক্ষয় রোগের অভিশাপ দিয়েছিল। এই অভিশাপটি চাঁদের ক্ষয় (কৃষ্ণ পক্ষ) এবং শিবের হস্তক্ষেপের পরে তার পরবর্তী মোম (শুক্ল পক্ষ) ব্যাখ্যা করে।",
+                    myth_churning_title: "সমুদ্র-মন্থন",
+                    myth_churning_text: "সমুদ্র-মন্থনের সময়, দেবতা এবং অসুরদের দ্বারা মহাজাগতিক মহাসাগরের মহান মন্থন, চন্দ্র আবির্ভূত হওয়া ঐশ্বরিক ধন (<i>রত্ন</i>) গুলির মধ্যে একটি ছিল। শিব তাকে নিয়ে গিয়েছিলেন এবং তাকে একটি অলঙ্কার হিসাবে তাঁর মাথায় রেখেছিলেন, তাকে ঐশ্বরিক মর্যাদা এবং সুরক্ষা প্রদান করেছিলেন। এই সমিতি চাঁদের शुद्ध, सात्त्विक প্রকৃতি তুলে ধরে।",
+                    myth_symbolism_title: "মূল প্রতীকবাদ",
+                    myth_symbolism_text: "বৈদিক জ্যোতিষে, চন্দ্র মন, আবেগ, মা, পুষ্টি এবং উর্বরতার চূড়ান্ত প্রতীক। তার চক্রীয় পর্যায়গুলি জীবন, মৃত্যু এবং পুনর্জন্মের ছন্দকে প্রতিনিধিত্ব করে। দ্রুততম গতিশীল গ্রহ হিসাবে, তিনি আমাদের দৈনন্দিন মেজাজ, মানসিক অবস্থা (<i>মানস্থিতি</i>), এবং বিশ্বের প্রতি তাত্ক্ষণিক প্রতিক্রিয়া নিয়ন্ত্রণ করেন, চেতনার চির-পরিবর্তনশীল প্রকৃতিকে প্রতিফলিত করে।",
+                    astro_title: "জ্যোতিষ প্রোফাইল",
+                    astro_subtitle: "রাশিচক্রে এর মর্যাদা থেকে শুরু করে এর শক্তি এবং একটি রাশিফলের বারোটি ঘরে স্থাপন করা হলে এর গভীর প্রভাব পর্যন্ত চাঁদের মৌলিক জ্যোতিষীয় বৈশিষ্ট্যগুলি অন্বেষণ করুন। এর ব্যাখ্যামূলক তাত্পর্য উন্মোচন করতে নীচের উপাদানগুলির সাথে যোগাযোগ করুন।",
+                    astro_dignities_title: "মর্যাদা ও শাসন",
+                    astro_rulership: "শাসন",
+                    astro_cancer: "কর্কট",
+                    astro_exaltation: "উত্তুঙ্গ",
+                    astro_taurus: "বৃষ",
+                    astro_debilitation: "দুর্বলতা",
+                    astro_scorpio: "বৃশ্চিক",
+                    astro_sadbala_title: "ষড়বল: জ্যোতিষীয় শক্তি",
+                    astro_sadbala_text: "ষড়বল একটি গ্রহের শক্তি পরিমাপ করার একটি ব্যবস্থা। রাডার চার্টটি শক্তির ছয়টি মূল উত্স জুড়ে চন্দ্রের ক্ষমতা দেখায়। একটি ভারসাম্যপূর্ণ চার্ট একটি মনস্তাত্ত্বিকভাবে শক্তিশালী এবং স্থিতিস্থাপক চাঁদকে নির্দেশ করে।",
+                    astro_houses_title: "১২টি ঘরে প্রভাব",
+                    astro_houses_text: "একটি ঘরে (<i>ভাব</i>) চাঁদের অবস্থান জীবনের সেই ক্ষেত্রটি প্রকাশ করে যেখানে একজনের মানসিক মনোযোগ নিহিত থাকে। এর নির্দিষ্ট ব্যাখ্যা পড়তে নীচের একটি ঘরের নম্বরে ক্লিক করুন।",
+                    timeline_title: "চন্দ্র অধ্যয়নের ঐতিহাসিক সময়রেখা",
+                    timeline_subtitle: "ভারতে চন্দ্র পর্যবেক্ষণ এবং ব্যাখ্যার বৌদ্ধিক বংশের সন্ধান করুন, প্রাচীনতম বৈদিক স্তোত্র থেকে শুরু করে ধ্রুপদী এবং মধ্যযুগীয় যুগের পরিশীলিত গাণিতিক গ্রন্থ পর্যন্ত।",
+                    timeline_rgveda_title: "ঋগ্বেদ",
+                    timeline_rgveda_text: "প্রাচীনতম স্তোত্রগুলি চাঁদকে প্রাথমিকভাবে সোম, একটি ঐশ্বরিক, মাদকাসক্ত পানীয় এবং একটি দেবতা হিসাবে আহ্বান করে। এর ভূমিকা মূলত আনুষ্ঠানিক এবং ক্যালেন্ডার সংক্রান্ত, বলিদানের জন্য সময় চিহ্নিত করে।",
+                    timeline_vedanga_title: "বেদাঙ্গ জ্যোতিষ",
+                    timeline_vedanga_text: "এই আনুষঙ্গিক বৈদিক পাঠ, যা লগধকে দায়ী করা হয়, ভারতীয় জ্যোতির্বিদ্যার উপর প্রাচীনতম কাজগুলির মধ্যে একটি। এটি আনুষ্ঠানিক উদ্দেশ্যে তিথি (চন্দ্র দিন) এবং নক্ষত্র গণনার জন্য একটি আনুষ্ঠানিক ব্যবস্থা স্থাপন করে।",
+                    timeline_surya_title: "সূর্য সিদ্ধান্ত",
+                    timeline_surya_text: "ধ্রুপদী ভারতীয় জ্যোতির্বিদ্যার একটি ভিত্তিগত পাঠ। চাঁদের উপর এর অধ্যায়গুলি চন্দ্র দ্রাঘিমাংশ গণনার জন্য পরিশীলিত সূত্র সরবরাহ করে, যার মধ্যে অসঙ্গতি এবং সান্ধ্যের জন্য সংশোধন অন্তর্ভুক্ত রয়েছে, যা গাণিতিক নির্ভুলতায় একটি বড় লাফকে চিহ্নিত করে।",
+                    timeline_brihat_title: "বৃহৎসংহিতা",
+                    timeline_brihat_text: "মহান পলিম্যাথ বরাহমিহির দ্বারা রচিত, এই বিশ্বকোষীয় কাজটি চন্দ্র ঘটনা সম্পর্কিত বিস্তারিত বিভাগ ধারণ করে, যার মধ্যে রয়েছে সংযোগ, গ্রহণ এবং বিভিন্ন নক্ষত্রে চাঁদের অবস্থান এবং এর দিকগুলির জ্যোতিষীয় ব্যাখ্যা।",
+                    timeline_siromani_title: "সিদ্ধান্ত শিরোমণি",
+                    timeline_siromani_text: "ভাস্কর II-এর শ্রেষ্ঠ कृति চন্দ্র গণনাকে আরও পরিমার্জিত করে। তিনি কেন্দ্রের সমীকরণের মতো ধারণাগুলিকে আরও নির্ভুলতার সাথে প্রবর্তন করেন এবং চন্দ্রের গতির উপর বিস্তারিত ভাষ্য প্রদান করেন, যা শতাব্দীর পর শতাব্দীর জন্য গাণিতিক কাঠামোকে শক্তিশালী করে।",
+                    comp_title: "গণনামূলক ম্যাট্রিক্স",
+                    comp_subtitle: "এই বিভাগটি ধ্রুপদী সিদ্ধান্ত জ্যোতির্বিদ্যা অনুসারে চাঁদের প্রকৃত দ্রাঘিমাংশ (স্পষ্ট চন্দ্র) নির্ধারণের জন্য মূল গাণিতিক সূত্রগুলি উপস্থাপন করে। একটি নির্দিষ্ট তারিখের জন্য ধাপে ধাপে উদাহরণ দেখতে ক্যালকুলেটরটি ব্যবহার করুন।",
+                    comp_params_title: "গণনা পরামিতি",
+                    comp_table_var: "পরিবর্তনশীল",
+                    comp_table_desc: "বর্ণনা",
+                    comp_table_val: "সূত্র / মান",
+                    comp_days: "মহাযুগ থেকে দিন",
+                    comp_user_input: "ব্যবহারকারী ইনপুট",
+                    comp_mean_long: "গড় দ্রাঘিমাংশ",
+                    comp_mean_anom: "গড় অসঙ্গতি",
+                    comp_eq_center: "কেন্দ্রের সমীকরণ",
+                    comp_corr_long: "সংশোধিত দ্রাঘিমাংশ",
+                    comp_true_long: "প্রকৃত দ্রাঘিমাংশ",
+                    comp_ayanamsa: "অয়নാംশ সংশোধন",
+                    comp_calc_title: "ইন্টারেক্টিভ ক্যালকুলেটর",
+                    comp_select_date: "একটি তারিখ নির্বাচন করুন:",
+                    comp_calc_btn: "চন্দ্র দ্রাঘিমাংশ গণনা করুন",
+                    comp_results_placeholder: "ফলাফল এখানে প্রদর্শিত হবে...",
+                    sadbala_label: "চন্দ্র ষড়বল (রূপে)",
+                    sadbala_cats: ['স্থান বল', 'দিগ বল', 'কাল বল', 'চেষ্টা বল', 'নৈসর্গিক বল', 'দৃগ বল'],
+                    house_interpretations: {
+                        1: "<b>ঘর ১ (আত্ম):</b> মন এবং পরিচয় এক। আবেগগতভাবে প্রকাশক্ষম, সংবেদনশীল এবং সম্পর্ক-ভিত্তিক। ব্যক্তিত্ব পুষ্টিকর এবং ওঠানামা করে। জনসাধারণের ধারণা গুরুত্বপূর্ণ।",
+                        2: "<b>ঘর ২ (ধন, পরিবার):</b> পরিবার, সম্পত্তি এবং সুরক্ষার প্রতি শক্তিশালী মানসিক সংযুক্তি। অর্থ ওঠানামা করতে পারে। একটি প্রশান্তিদায়ক কণ্ঠ। বস্তুগত স্থিতিশীলতা এবং পরিচিত পরিবেশে আরাম খুঁজে পায়।",
+                        3: "<b>ঘর ৩ (যোগাযোগ, ভাইবোন):</b> মন কৌতূহলী এবং যোগাযোগমূলক। ভাইবোন এবং প্রতিবেশীদের সাথে আবেগগতভাবে সংযুক্ত। ছোট ভ্রমণ এবং শেখা আরাম নিয়ে আসে। চিন্তাভাবনা প্রায়শই বিষয়ভিত্তিক হয়।",
+                        4: "<b>ঘর ৪ (বাড়ি, মা):</b> চাঁদের জন্য সর্বোত্তম স্থান। মা, বাড়ি এবং মূলের সাথে গভীরভাবে সংযুক্ত। সর্বোপরি মানসিক নিরাপত্তা খোঁজে। একটি ব্যক্তিগত অভয়ারণ্যের তীব্র প্রয়োজন।",
+                        5: "<b>ঘর ৫ (সৃজনশীলতা, শিশু):</b> সৃজনশীল প্রকাশ, রোম্যান্স এবং শিশুদের মধ্যে আবেগগতভাবে বিনিয়োগ করা। মন খেলাধুলাপ্রবণ এবং নাটকীয়। জল্পনা এবং বৌদ্ধিক সাধনায় আনন্দ খুঁজে পায়।",
+                        6: "<b>ঘর ৬ (স্বাস্থ্য, সেবা):</b> সেবা এবং দৈনন্দিন রুটিনের মাধ্যমে মানসিক সন্তুষ্টি খুঁজে পায়। একজন চিন্তাশীল মন, বিশদ এবং আত্ম-উন্নতির উপর দৃষ্টি নিবদ্ধ করে। উদ্বেগের সাথে সম্পর্কিত স্বাস্থ্য সমস্যাগুলির প্রবণতা।",
+                        7: "<b>ঘর ৭ (অংশীদারিত্ব):</b> সম্পর্ক এবং বিবাহের মাধ্যমে মানসিক পরিপূর্ণতা খোঁজে। সঙ্গীকে সুরক্ষার উত্স হিসাবে দেখা হয়। একের পর এক মিথস্ক্রিয়ায় সম্প্রীতি এবং কূটনীতির তীব্র প্রয়োজন।",
+                        8: "<b>ঘর ৮ (রূপান্তর, গুপ্ত):</b> একটি গভীর, তীব্র এবং গোপনীয় মানসিক প্রকৃতি। মন মনোবিজ্ঞান, রহস্য এবং যৌথ সম্পদের প্রতি আকৃষ্ট হয়। মানসিক অশান্তি এবং গভীর মনস্তাত্ত্বিক অন্তর্দৃষ্টির প্রবণতা।",
+                        9: "<b>ঘর ৯ (দর্শন, পিতা):</b> বিশ্বাস, উচ্চ শিক্ষা এবং দূরপাল্লার ভ্রমণের সাথে আবেগগতভাবে সংযুক্ত। দর্শন বা ধর্মে নিরাপত্তা খুঁজে পায়। মা একজন আধ্যাত্মিক পথপ্রদর্শক হতে পারেন।",
+                        10: "<b>ঘর ১০ (ক্যারিয়ার, স্থিতি):</b> জনজীবন এবং ক্যারিয়ার মানসিক সুস্থতার কেন্দ্রবিন্দু। স্বীকৃতি এবং সম্মানের তীব্র প্রয়োজন। ক্যারিয়ারে প্রায়শই জনসাধারণের সাথে পুষ্টি, যত্ন নেওয়া বা মোকাবেলা করা জড়িত থাকে।",
+                        11: "<b>ঘর ১১ (বন্ধুত্ব, লাভ):</b> বন্ধু, গোষ্ঠী এবং সামাজিক নেটওয়ার্ক থেকে মানসিক সমর্থন খুঁজে পায়। আশা এবং ইচ্ছা গুরুত্বপূর্ণ। সম্মিলিত লক্ষ্য এবং মানবিক আদর্শ অর্জনের মাধ্যমে পরিপূর্ণতা আসে।",
+                        12: "<b>ঘর ১২ (আধ্যাত্মিকতা, ক্ষতি):</b> একটি সংবেদনশীল, স্বজ্ঞাত এবং সহানুভূতিশীল মন। একাকীত্ব, আধ্যাত্মিকতা এবং নিঃস্বার্থ সেবায় শান্তি খুঁজে পায়। প্রাণবন্ত স্বপ্ন এবং অবচেতন ভয়ের প্রবণতা। আবেগগতভাবে অধরা।"
+                    },
+                    house_title_prefix: "ঘরে চাঁদ "
+                }
+            };
+
+            // --- Core Functions ---
+
+            /**
+             * Switches the active language for the entire page.
+             * @param {string} lang - The language code ('en', 'hi', 'bn').
+             */
+            const changeLanguage = (lang) => {
+                currentLang = lang;
+                localStorage.setItem('lang', lang);
+                document.documentElement.lang = lang;
+
+                // Update language button states
+                langButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+
+                // Update all text elements with data-lang-key
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.dataset.langKey;
+                    if (translations[lang] && translations[lang][key]) {
+                        el.innerHTML = translations[lang][key];
+                    }
+                });
+
+                // Re-render chart and update house interpretation with new language
+                createOrUpdateChart(lang);
+                updateHouseInterpretation(document.querySelector('.house-grid-item.active').dataset.house);
+            };
+
+            /**
+             * Switches the visible content tab.
+             * @param {string} targetId - The ID of the content section to show.
+             */
+            const switchTab = (targetId) => {
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === targetId);
+                });
+
+                navButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.target === targetId);
+                });
+            };
+
+            /**
+             * Updates the house interpretation text box.
+             * @param {string} houseNum - The house number (1-12).
+             */
+            const updateHouseInterpretation = (houseNum) => {
+                houseGridItems.forEach(item => item.classList.remove('active'));
+                document.querySelector(`.house-grid-item[data-house='${houseNum}']`).classList.add('active');
+
+                const houseData = translations[currentLang].house_interpretations;
+                const prefix = translations[currentLang].house_title_prefix;
+                houseInterpretationEl.innerHTML = `<h5 class="font-bold text-amber-900 mb-2">${prefix}${houseNum}</h5><p class="text-amber-800/90">${houseData[houseNum]}</p>`;
+            };
+
+            /**
+             * Creates or updates the Sadbala radar chart.
+             * @param {string} lang - The current language for labels.
+             */
+            const createOrUpdateChart = (lang) => {
+                const chartEl = document.getElementById('sadbalaChart');
+                if (!chartEl) return;
+                
+                if (sadbalaChart) {
+                    sadbalaChart.destroy(); // Destroy old chart instance
+                }
+
+                const chartData = {
+                    labels: translations[lang].sadbala_cats,
+                    datasets: [{
+                        label: translations[lang].sadbala_label,
+                        data: [110, 80, 120, 90, 150, 60],
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                        borderColor: 'rgba(212, 175, 55, 1)',
+                        pointBackgroundColor: 'rgba(212, 175, 55, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(212, 175, 55, 1)',
+                        borderWidth: 2
+                    }]
+                };
+
+                const chartConfig = {
+                    type: 'radar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(61, 53, 34, 0.2)' },
+                                grid: { color: 'rgba(61, 53, 34, 0.2)' },
+                                pointLabels: {
+                                    font: {
+                                        size: 11,
+                                        family: lang === 'hi' ? 'Hind Siliguri' : (lang === 'bn' ? 'Tiro Bangla' : 'Inter')
+                                    },
+                                    color: '#3D3522'
+                                },
+                                ticks: { backdropColor: '#FDFBF5', color: '#3D3522' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                titleFont: { family: lang === 'hi' ? 'Hind Siliguri' : (lang === 'bn' ? 'Tiro Bangla' : 'Inter') },
+                                bodyFont: { family: lang === 'hi' ? 'Hind Siliguri' : (lang === 'bn' ? 'Tiro Bangla' : 'Inter') }
+                            }
+                        }
+                    }
+                };
+
+                sadbalaChart = new Chart(chartEl, chartConfig);
+            };
+            
+            /**
+             * Calculates and displays the lunar longitude.
+             */
+            const calculateLongitude = () => {
+                const epoch = new Date('2000-01-01T12:00:00Z'); // Using noon UT (Terrestrial Time proxy)
+                if (!dateInput.value) {
+                     resultsEl.innerHTML = `<p class="text-red-600">Please select a valid date.</p>`;
+                     return;
+                }
+                const selectedDate = new Date(dateInput.value);
+
+                const diffTime = selectedDate - epoch;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+                const Lm = (218.316 + 13.176396 * diffDays) % 360;
+                const Mm_rad = ( (134.963 + 13.064993 * diffDays) % 360 ) * Math.PI / 180;
+                const C = 6.289 * Math.sin(Mm_rad);
+                const L_prime = (Lm + C + 360) % 360;
+
+                const ayanamsa_2000 = 23.8646;
+                const precession = 0.01397 * (selectedDate.getFullYear() - 2000);
+                const ayanamsa = ayanamsa_2000 + precession;
+
+                let trueLongitude = (L_prime - ayanamsa + 360) % 360;
+                
+                const t = translations[currentLang];
+                resultsEl.innerHTML = `
+                    <p><b class="font-semibold text-amber-900">${t.comp_days}:</b> ${diffDays.toFixed(2)}</p>
+                    <p><b class="font-semibold text-amber-900">${t.comp_mean_long} ($$L_m$$):</b> ${Lm.toFixed(4)}°</p>
+                    <p><b class="font-semibold text-amber-900">${t.comp_mean_anom} ($$M_m$$):</b> ${(Mm_rad * 180 / Math.PI).toFixed(4)}°</p>
+                    <p><b class="font-semibold text-amber-900">${t.comp_eq_center} (C):</b> ${C.toFixed(4)}°</p>
+                    <p><b class="font-semibold text-amber-900">${t.comp_corr_long} ($$L'$$):</b> ${L_prime.toFixed(4)}°</p>
+                    <p><b class="font-semibold text-amber-900">${t.comp_ayanamsa}:</b> -${ayanamsa.toFixed(4)}°</p>
+                    <hr class="my-2 border-amber-200/50">
+                    <p class="font-bold text-lg text-amber-900">${t.comp_true_long} ($$\\lambda$$): ${trueLongitude.toFixed(4)}°</p>
+                `;
+            }
+
+            // --- Event Listeners Setup ---
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => switchTab(button.dataset.target));
+            });
+
+            houseGridItems.forEach(item => {
+                item.addEventListener('click', () => updateHouseInterpretation(item.dataset.house));
+            });
+
+            langButtons.forEach(button => {
+                button.addEventListener('click', () => changeLanguage(button.dataset.lang));
+            });
+            
+            calculateBtn.addEventListener('click', calculateLongitude);
+
+
+            // --- Initial Page Load ---
+            dateInput.valueAsDate = new Date();
+            changeLanguage(currentLang); // Initialize page with stored or default language
+        });
+    </script>
+</body>
+</html>
